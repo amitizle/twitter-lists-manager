@@ -2,6 +2,11 @@ language: go
 go:
   - "1.11"
 go_import_path: github.com/amitizle/twitter_lists_manager
+
+before_install:
+  - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+  - dep ensure
+
 deploy:
   - provider: script
     skip_cleanup: true
