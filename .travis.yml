@@ -1,6 +1,6 @@
 language: go
 go:
-  - "1.11"
+  - "1.10"
 deploy:
   - provider: script
     skip_cleanup: true
