@@ -1,0 +1,19 @@
+[
+  {
+    "Slug": "programming",
+    "Name": "Programming",
+    "Description": "",
+    "Members": [
+      "golang",
+      "joeerl",
+      "googledevs",
+      "peterseibel",
+      "spolsky",
+      "rvirding",
+      "jwz",
+      "shanselman",
+      "bradfitz"
+    ],
+    "Mode": "private"
+  }
+]
