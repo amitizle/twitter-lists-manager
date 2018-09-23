@@ -1,6 +1,7 @@
 language: go
 go:
-  - "1.10"
+  - "1.11"
+go_import_path: github.com/amitizle/twitter_lists_manager
 deploy:
   - provider: script
     skip_cleanup: true
