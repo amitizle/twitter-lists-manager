@@ -1,9 +1,10 @@
-package twitter_client
+package twitterclient
 
 import (
 	"errors"
-	"github.com/ChimeraCoder/anaconda"
 	"net/url"
+
+	"github.com/ChimeraCoder/anaconda"
 )
 
 type Client struct {
@@ -26,18 +27,20 @@ type List struct {
 	memberCount int64
 }
 
+// NewClient returns a new twitterclient
 func NewClient() *Client {
 	return &Client{
 		api: &anaconda.TwitterApi{},
 	}
 }
 
+// Init initializes the client
 func (client *Client) Init() error {
 	if client.Username == "" {
 		return errors.New("username cannot be empty")
 	}
-	newApi := anaconda.NewTwitterApiWithCredentials(client.AccessToken, client.AccessTokenSecret, client.ConsumerKey, client.ConsumerSecret)
-	client.api = newApi
+	newAPI := anaconda.NewTwitterApiWithCredentials(client.AccessToken, client.AccessTokenSecret, client.ConsumerKey, client.ConsumerSecret)
+	client.api = newAPI
 	user, err := client.api.GetUsersShow(client.Username, nil)
 	if err != nil {
 		return err
@@ -46,6 +49,7 @@ func (client *Client) Init() error {
 	return nil
 }
 
+// GetOwnedLists returns the lists owned by the authenticated user
 func (client *Client) GetOwnedLists(v url.Values) ([]*List, error) {
 	ownedLists, err := client.api.GetListsOwnedBy(client.userId, nil)
 	if err != nil {
@@ -66,6 +70,7 @@ func (client *Client) GetOwnedLists(v url.Values) ([]*List, error) {
 	return ownedListsRet, nil
 }
 
+// PopulateListMembers populates the Members field in the List struct
 func (client *Client) PopulateListMembers(list *List) error {
 	v := url.Values{}
 	var cursor anaconda.UserCursor
@@ -79,6 +84,21 @@ func (client *Client) PopulateListMembers(list *List) error {
 			list.Members = append(list.Members, user.ScreenName)
 		}
 		v.Set("cursor", cursor.Next_cursor_str)
+	}
+	return nil
+}
+
+// RemoveUsersFromList is not yet supported because anaconda does not support
+// POST /lists/destroy yet (https://developer.twitter.com/en/docs/accounts-and-users/create-manage-lists/api-reference/post-lists-members-destroy)
+func (client *Client) RemoveUsersFromList(list *List, usersToRemove []string) error {
+	return nil
+}
+
+// AddUsersToList adds the given users to the given list
+func (client *Client) AddUsersToList(list *List, usersToAdd []string) error {
+	_, err := client.api.AddMultipleUsersToList(usersToAdd, list.listId, nil)
+	if err != nil {
+		return err
 	}
 	return nil
 }

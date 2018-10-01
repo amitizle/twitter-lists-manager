@@ -7,7 +7,7 @@ import (
 
 	"github.com/amitizle/twitter_lists_manager/cmd"
 	"github.com/amitizle/twitter_lists_manager/internal/printer"
-	"github.com/amitizle/twitter_lists_manager/internal/twitter_client"
+	"github.com/amitizle/twitter_lists_manager/internal/twitterclient"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
@@ -44,8 +44,8 @@ func main() {
 	}
 }
 
-func twitterClient() (*twitter_client.Client, error) {
-	c := twitter_client.NewClient()
+func twitterClient() (*twitterclient.Client, error) {
+	c := twitterclient.NewClient()
 	c.Username = *user
 	c.AccessToken = *accessToken
 	c.AccessTokenSecret = *accessTokenSecret

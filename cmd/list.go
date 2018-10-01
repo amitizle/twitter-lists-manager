@@ -2,11 +2,11 @@ package cmd
 
 import (
 	"github.com/amitizle/twitter_lists_manager/internal/printer"
-	"github.com/amitizle/twitter_lists_manager/internal/twitter_client"
+	"github.com/amitizle/twitter_lists_manager/internal/twitterclient"
 )
 
 // ListLists lists the lists owned by the authenticated user
-func ListLists(client *twitter_client.Client) {
+func ListLists(client *twitterclient.Client) {
 	ownedLists, err := client.GetOwnedLists(nil)
 	if err != nil {
 		printer.Fatalf("Error: %v", err)
