@@ -3,14 +3,12 @@ package main
 // TODO refactor some of the funcs here to different packages/files
 
 import (
-	"encoding/json"
-	"fmt"
-	"github.com/amitizle/twitter_lists_manager/internal/printer"
-	"github.com/amitizle/twitter_lists_manager/internal/twitter_client"
-	"gopkg.in/alecthomas/kingpin.v2"
-	"io/ioutil"
 	"os"
-	"path/filepath"
+
+	"github.com/amitizle/twitter_lists_manager/cmd"
+	"github.com/amitizle/twitter_lists_manager/internal/printer"
+	"github.com/amitizle/twitter_lists_manager/internal/twitterclient"
+	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 var (
@@ -38,42 +36,16 @@ func main() {
 	}
 	switch kingpinParse {
 	case applyCommand.FullCommand():
-		applyLists(client, *inFile)
+		cmd.ApplyLists(client, *inFile)
 	case importCommand.FullCommand():
-		importLists(client, *importOutputFile)
+		cmd.ImportLists(client, *importOutputFile)
 	case listCommand.FullCommand():
-		listLists(client)
+		cmd.ListLists(client)
 	}
 }
 
-func readJsonLists(jsonFilePath string) ([]twitter_client.List, error) {
-	fullPath, err := filepath.Abs(jsonFilePath)
-	if err != nil {
-		return []twitter_client.List{}, err
-	}
-	jsonFile, err := os.Open(fullPath)
-	if err != nil {
-		return []twitter_client.List{}, err
-	}
-
-	defer jsonFile.Close()
-
-	byteValue, err := ioutil.ReadAll(jsonFile)
-	if err != nil {
-		return []twitter_client.List{}, err
-	}
-
-	lists := make([]twitter_client.List, 0)
-	err = json.Unmarshal(byteValue, &lists)
-	if err != nil {
-		return []twitter_client.List{}, err
-	}
-
-	return lists, nil
-}
-
-func twitterClient() (*twitter_client.Client, error) {
-	c := twitter_client.NewClient()
+func twitterClient() (*twitterclient.Client, error) {
+	c := twitterclient.NewClient()
 	c.Username = *user
 	c.AccessToken = *accessToken
 	c.AccessTokenSecret = *accessTokenSecret
@@ -83,51 +55,4 @@ func twitterClient() (*twitter_client.Client, error) {
 		return c, err
 	}
 	return c, nil
-}
-
-func applyLists(client *twitter_client.Client, inFile string) {
-	lists, err := readJsonLists(inFile)
-	if err != nil {
-		printer.Fatalf("Error while reading lists from JSON file %s: %v", inFile, err)
-	}
-	printer.Infof("%#v", lists)
-}
-
-func importLists(client *twitter_client.Client, outputFile string) {
-	ownedLists, err := client.GetOwnedLists(nil)
-	if err != nil {
-		printer.Fatalf("Error: %v", err)
-	}
-	for _, list := range ownedLists {
-		client.PopulateListMembers(list)
-	}
-	jsonBytes, err := json.MarshalIndent(ownedLists, "", "  ") // TODO add pretty out optional
-	if err != nil {
-		printer.Fatalf("Error while marshaling JSON: %v", err)
-	}
-	jsonString := string(jsonBytes)
-	if outputFile == "" {
-		printer.NoColor(jsonString)
-	} else {
-		file, err := os.Create(outputFile)
-		if err != nil {
-			printer.Fatalf("Error creating file %s: %v", outputFile, err)
-		}
-		defer file.Close()
-		_, err = fmt.Fprintf(file, jsonString)
-		if err != nil {
-			printer.Fatalf("Error writing to file file %s: %v", outputFile, err)
-		}
-		printer.Infof("Successfully wrote lists to %s", outputFile)
-	}
-}
-
-func listLists(client *twitter_client.Client) {
-	ownedLists, err := client.GetOwnedLists(nil)
-	if err != nil {
-		printer.Fatalf("Error: %v", err)
-	}
-	for _, l := range ownedLists {
-		printer.NoColorf("Name: %s, Slug: %s, Description: %s", l.Name, l.Slug, l.Description)
-	}
 }

@@ -38,3 +38,11 @@ func Warn(line string) {
 func Warnf(line string, args ...interface{}) {
 	Warn(fmt.Sprintf(line, args...))
 }
+
+func Red(line string) {
+	color.Red(line)
+}
+
+func Redf(line string, args ...interface{}) {
+	Red(fmt.Sprintf(line, args...))
+}
