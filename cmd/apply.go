@@ -26,10 +26,10 @@ func ApplyLists(client *twitterclient.Client, inFile string) {
 	localListsMap := make(map[string]twitterclient.List)
 	ownedListsMap := make(map[string]*twitterclient.List)
 	for _, list := range localLists {
-		localListsMap[list.Slug] = list // TODO something?
+		localListsMap[list.Name] = list // TODO something?
 	}
 	for _, ownedList := range ownedLists {
-		ownedListsMap[ownedList.Slug] = ownedList
+		ownedListsMap[ownedList.Name] = ownedList
 	}
 	for slug, localList := range localListsMap {
 		if ownedList, ok := ownedListsMap[slug]; ok {
@@ -39,15 +39,19 @@ func ApplyLists(client *twitterclient.Client, inFile string) {
 			client.PopulateListMembers(ownedList)
 			screenNamesToRemove := sliceDifference(ownedList.Members, localList.Members)
 			screenNamesToAdd := sliceDifference(localList.Members, ownedList.Members)
-			printer.Infof("[Adding]\n%s", strings.Join(screenNamesToAdd, "\n"))
-			printer.Redf("[Removing]\n%s", strings.Join(screenNamesToRemove, "\n"))
+			if len(screenNamesToAdd) > 0 {
+				printer.Infof("[Adding]\n%s", strings.Join(screenNamesToAdd, "\n"))
+			}
+			if len(screenNamesToRemove) > 0 {
+				printer.Redf("[Removing]\n%s", strings.Join(screenNamesToRemove, "\n"))
+			}
 			err := client.AddUsersToList(ownedList, screenNamesToAdd)
 			if err != nil {
-				fmt.Errorf("Error while adding users to list %s: %v", ownedList.Slug, err)
+				fmt.Errorf("Error while adding users to list %s: %v", ownedList.Name, err)
 			}
 			err = client.RemoveUsersFromList(ownedList, screenNamesToRemove)
 			if err != nil {
-				fmt.Errorf("Error while removing users from list %s: %v", ownedList.Slug, err)
+				fmt.Errorf("Error while removing users from list %s: %v", ownedList.Name, err)
 			}
 			if err = client.UpdateList(ownedList); err != nil {
 				printer.Redf("Error updating a list %s: %v", localList.Name, err)

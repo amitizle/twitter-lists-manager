@@ -12,6 +12,6 @@ func ListLists(client *twitterclient.Client) {
 		printer.Fatalf("Error: %v", err)
 	}
 	for _, l := range ownedLists {
-		printer.NoColorf("Name: %s, Slug: %s, Description: %s", l.Name, l.Slug, l.Description)
+		printer.NoColorf("Name: %s, Description: %s", l.Name, l.Description)
 	}
 }

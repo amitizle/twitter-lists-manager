@@ -18,7 +18,7 @@ type Client struct {
 }
 
 type List struct {
-	Slug        string
+	slug        string
 	Name        string
 	Description string
 	Members     []string
@@ -58,7 +58,7 @@ func (client *Client) GetOwnedLists(v url.Values) ([]*List, error) {
 	ownedListsRet := make([]*List, 0)
 	for _, list := range ownedLists {
 		ownedListsRet = append(ownedListsRet, &List{
-			Slug:        list.Slug,
+			slug:        list.Slug,
 			Name:        list.Name,
 			Description: list.Description,
 			Members:     []string{},
