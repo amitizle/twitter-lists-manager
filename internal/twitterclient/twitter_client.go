@@ -23,7 +23,7 @@ type List struct {
 	Description string
 	Members     []string
 	Mode        string
-	listId      int64
+	listID      int64
 	memberCount int64
 }
 
@@ -55,17 +55,17 @@ func (client *Client) GetOwnedLists(v url.Values) ([]*List, error) {
 	if err != nil {
 		return []*List{}, err
 	}
-	ownedListsRet := make([]*List, len(ownedLists))
-	for i, list := range ownedLists {
-		ownedListsRet[i] = &List{
+	ownedListsRet := make([]*List, 0)
+	for _, list := range ownedLists {
+		ownedListsRet = append(ownedListsRet, &List{
 			Slug:        list.Slug,
 			Name:        list.Name,
 			Description: list.Description,
 			Members:     []string{},
 			Mode:        list.Mode,
 			memberCount: list.MemberCount,
-			listId:      list.Id,
-		}
+			listID:      list.Id,
+		})
 	}
 	return ownedListsRet, nil
 }
@@ -76,7 +76,7 @@ func (client *Client) PopulateListMembers(list *List) error {
 	var cursor anaconda.UserCursor
 	var err error
 	for cursor.Next_cursor_str != "0" {
-		cursor, err = client.api.GetListMembers(client.Username, list.listId, v)
+		cursor, err = client.api.GetListMembers(client.Username, list.listID, v)
 		if err != nil {
 			return err
 		}
@@ -90,15 +90,35 @@ func (client *Client) PopulateListMembers(list *List) error {
 
 // RemoveUsersFromList is not yet supported because anaconda does not support
 // POST /lists/destroy yet (https://developer.twitter.com/en/docs/accounts-and-users/create-manage-lists/api-reference/post-lists-members-destroy)
+// There is an open PR: https://github.com/ChimeraCoder/anaconda/pull/247
 func (client *Client) RemoveUsersFromList(list *List, usersToRemove []string) error {
 	return nil
 }
 
+// UpdateList updates the given list, however it's not implemented yet
+// https://developer.twitter.com/en/docs/accounts-and-users/create-manage-lists/api-reference/post-lists-update
+func (client *Client) UpdateList(list *List) error {
+	return nil
+}
+
 // AddUsersToList adds the given users to the given list
+// TODO support more than 100 members (should be separate API calls)
+// AddMultipleUsersToList is a wrapper to create_all.json, which is limited to
+// 100 users per call;
+// https://developer.twitter.com/en/docs/accounts-and-users/create-manage-lists/api-reference/post-lists-members-create_all
 func (client *Client) AddUsersToList(list *List, usersToAdd []string) error {
-	_, err := client.api.AddMultipleUsersToList(usersToAdd, list.listId, nil)
+	_, err := client.api.AddMultipleUsersToList(usersToAdd, list.listID, nil)
+	return err
+}
+
+// CreateList creates the list using the *List given
+func (client *Client) CreateList(list *List) error {
+	v := url.Values{}
+	v.Add("mode", list.Mode)
+	newList, err := client.api.CreateList(list.Name, list.Description, v)
 	if err != nil {
 		return err
 	}
-	return nil
+	list.listID = newList.Id
+	return client.AddUsersToList(list, list.Members)
 }

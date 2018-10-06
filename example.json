@@ -16,5 +16,15 @@
             "HashiCorp"
         ],
         "Mode": "private"
+    },
+    {
+        "Slug": "ireland",
+        "Name": "Ireland",
+        "Description": "Ireland things",
+        "Members": [
+            "TicketmasterIre",
+            "WeatherRTE"
+        ],
+        "Mode": "private"
     }
 ]

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -18,30 +19,44 @@ func ApplyLists(client *twitterclient.Client, inFile string) {
 	if err != nil {
 		printer.Fatalf("Error while reading lists from JSON file %s: %v", inFile, err)
 	}
-	printer.Infof("%#v", localLists)
 	ownedLists, err := client.GetOwnedLists(nil)
 	if err != nil {
 		printer.Fatalf("Error: %v", err)
 	}
-	printer.Infof("%#v", ownedLists)
-	localListsMap := make(map[string]*twitterclient.List)
+	localListsMap := make(map[string]twitterclient.List)
 	ownedListsMap := make(map[string]*twitterclient.List)
 	for _, list := range localLists {
-		localListsMap[list.Slug] = &list // TODO something?
+		localListsMap[list.Slug] = list // TODO something?
 	}
 	for _, ownedList := range ownedLists {
 		ownedListsMap[ownedList.Slug] = ownedList
 	}
 	for slug, localList := range localListsMap {
 		if ownedList, ok := ownedListsMap[slug]; ok {
+			printer.Infof("List %s already exists, diffing members and adding accordingly", ownedList.Name)
+			ownedList.Name = localList.Name
+			ownedList.Description = localList.Description
 			client.PopulateListMembers(ownedList)
 			screenNamesToRemove := sliceDifference(ownedList.Members, localList.Members)
 			screenNamesToAdd := sliceDifference(localList.Members, ownedList.Members)
-			printer.Infof(strings.Join(screenNamesToAdd, "\n"))
-			printer.Redf(strings.Join(screenNamesToRemove, "\n"))
-			client.AddUsersToList(ownedList, screenNamesToAdd)
-			// update list https://developer.twitter.com/en/docs/accounts-and-users/create-manage-lists/api-reference/post-lists-update
+			printer.Infof("[Adding]\n%s", strings.Join(screenNamesToAdd, "\n"))
+			printer.Redf("[Removing]\n%s", strings.Join(screenNamesToRemove, "\n"))
+			err := client.AddUsersToList(ownedList, screenNamesToAdd)
+			if err != nil {
+				fmt.Errorf("Error while adding users to list %s: %v", ownedList.Slug, err)
+			}
+			err = client.RemoveUsersFromList(ownedList, screenNamesToRemove)
+			if err != nil {
+				fmt.Errorf("Error while removing users from list %s: %v", ownedList.Slug, err)
+			}
+			if err = client.UpdateList(ownedList); err != nil {
+				printer.Redf("Error updating a list %s: %v", localList.Name, err)
+			}
 		} else { // new list TODO support deleting lists
+			printer.Infof("List %s does not exists, creating", localList.Name)
+			if err = client.CreateList(&localList); err != nil {
+				printer.Redf("Error creating a list %s: %v", localList.Name, err)
+			}
 		}
 	}
 }
