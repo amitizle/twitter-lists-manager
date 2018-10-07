@@ -1,6 +1,5 @@
 [
     {
-        "Slug": "programming",
         "Name": "Programming",
         "Description": "",
         "Members": [
@@ -18,13 +17,12 @@
         "Mode": "private"
     },
     {
-        "Slug": "ireland",
         "Name": "Ireland",
         "Description": "Ireland things",
         "Members": [
             "TicketmasterIre",
             "WeatherRTE"
         ],
-        "Mode": "private"
+        "Mode": "public"
     }
 ]
