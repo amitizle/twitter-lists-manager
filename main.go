@@ -21,9 +21,9 @@ var (
 
 	applyCommand  = app.Command("apply", "Apply changes to the lists")
 	listCommand   = app.Command("list", "List user lists")
-	importCommand = app.Command("import", "Import lists from Twitter")
+	exportCommand = app.Command("export", "Export lists from Twitter")
 
-	importOutputFile = importCommand.Flag("out-file", "Output file for the import (JSON formatted)").Short('o').String()
+	exportOutputFile = exportCommand.Flag("out-file", "Output file for the export (JSON formatted)").Short('o').String()
 	inFile           = applyCommand.Flag("file", "Input JSON formatted file").Required().Short('f').String()
 )
 
@@ -37,8 +37,8 @@ func main() {
 	switch kingpinParse {
 	case applyCommand.FullCommand():
 		cmd.ApplyLists(client, *inFile)
-	case importCommand.FullCommand():
-		cmd.ImportLists(client, *importOutputFile)
+	case exportCommand.FullCommand():
+		cmd.ExportLists(client, *exportOutputFile)
 	case listCommand.FullCommand():
 		cmd.ListLists(client)
 	}
