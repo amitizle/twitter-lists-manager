@@ -9,8 +9,8 @@ import (
 	"github.com/amitizle/twitter_lists_manager/internal/twitterclient"
 )
 
-// ImportLists imports the lists owned by the authenticated user to a JSON formatted outputFile
-func ImportLists(client *twitterclient.Client, outputFile string) { // TODO rename to export
+// ExportLists exports the lists owned by the authenticated user to a JSON formatted outputFile
+func ExportLists(client *twitterclient.Client, outputFile string) { // TODO rename to export
 	ownedLists, err := client.GetOwnedLists(nil)
 	if err != nil {
 		printer.Fatalf("Error: %v", err)
